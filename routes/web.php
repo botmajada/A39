@@ -1,7 +1,9 @@
 <?php
 
 use Faker\Extension\Helper;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -31,7 +33,7 @@ Route::get('/', function () {
 Route::get('/user/{name?}', function ($name = null) {
     return $name;
 });
- 
+
 Route::get('/user/{name?}', function ($name = 'John') {
     return $name;
 });
@@ -40,21 +42,20 @@ Route::post('/test/{data?}', function ($data = 'prueba') {
     return $data;
 });
 
-Route::match(array('GET', 'POST'), '/doble', function()
-{
+Route::match(array('GET', 'POST'), '/doble', function () {
     return 'Hello World';
 });
 
 Route::get('prueba/{id}', function ($id) {
     return $id;
 })
-->where('id', '[0-9]+');
+    ->where('id', '[0-9]+');
 
-Route::get('test4/{num}/{letter}', function ($num,$letter) {
-    return [$num,$letter];
+Route::get('test4/{num}/{letter}', function ($num, $letter) {
+    return [$num, $letter];
 })
-->where('num', '[0-9]+')
-->where('letter', '[a-z]+');
+    ->where('num', '[0-9]+')
+    ->where('letter', '[a-z]+');
 
 //Actividad 2
 
@@ -64,11 +65,11 @@ Route::get('test4/{num}/{letter}', function ($num,$letter) {
 */
 
 Route::get('/host', function () {
-    return env("DB_HOST"); 
+    return env("DB_HOST");
 });
 
 Route::get('/timezone', function () {
-    return config('app.timezone'); 
+    return config('app.timezone');
 });
 
 
@@ -78,8 +79,75 @@ Route::view('/inicio', 'home')->name('home');
 
 $dia = date("d");
 $mes = date("m");
-$año = date("y"); 
- 
+$año = date("y");
+
 //Route::view('/fecha','fecha',['dia' => $dia, 'mes' => $mes, 'año' => $año]);
 
-Route::view('/fecha','fecha',compact("dia","mes","año"));
+Route::view('/fecha', 'fecha', compact("dia", "mes", "año"));
+
+
+
+// A39
+// Actividad 4
+/*
+    Todos los usuarios que tengan en el nombre la cadena "Fer"  (operador like)
+    Todos los usuarios que tengan en el correo la palabra "laravel" y la cadena "com" (operador like con una array de condiciones en el where).
+    Todos los usuarios que tengan en el correo la palabra "laravel" o la palabra "com" (operador like con orWhere).
+    Haz un insert en la tabla usuarios.
+    Haz un insert de dos usuarios al mismo tiempo en la tabla usuarios.
+    Haz un insert utilizando el método insertGetId. ¿Qué devuelve este método?
+    Actualiza el correo del usuario con id=2. ¿Qué devuelve este método?
+    Borra el usuario con id 3.
+*/
+Route::get('/consultas', function ($users = DB::table('users')->like("Fer")) {
+    return $users;
+});
+
+Route::get('/consultas', function ($users = DB::table('users')->where([
+    ['email', 'LIKE', 'laravel'] and
+        ['semail', 'LIKE', 'com'],
+])->get()) {
+    return $users;
+});
+
+Route::get('/consultas', function ($users = DB::table('users')->where([
+    ['email', 'LIKE', 'laravel%'] or
+        ['semail', 'LIKE', '%com'],
+])->get()) {
+    return $users;
+});
+
+
+Route::get('/consultas', function ($users = DB::table('users')->insert([
+    'name' => 'andres',
+    'email' => 'andres@gmail.com',
+    'password' => 123456789
+])) {
+    return $users;
+});
+
+
+
+Route::get('/consultas', function ($users = DB::table('users')->insert([
+    ['name' => 'andres', 'email' => 'andres@gmail.com', 'password' => 123456789],
+    ['name' => 'maria', 'email' => 'maria@gmail.com', 'password' => 123456789],
+])) {
+    return $users;
+});
+
+
+Route::get('/consultas', function ($users = DB::table('users')->insertGetId(
+    ['name' => 'pepe','email' => 'pepe@gmail.com', 'password' => 123456789]
+)) {
+    return $users;
+});
+
+Route::get('/consultas', function ($users = DB::table('users')
+              ->where('id', 2)
+              ->update(['email' => 'paquito@gmail.com'])) {
+    return $users;
+});
+
+Route::get('/consultas', function ($users = DB::table('users')->where('id', '=', 3)->delete()) {
+    return $users;
+});
